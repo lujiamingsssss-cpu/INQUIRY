@@ -102,6 +102,10 @@ class RecordingSt:
         count = spec if isinstance(spec, int) else len(spec)
         return [_RecordingColumn() for _ in range(count)]
 
+    def container(self, *args, **kwargs):
+        self._record("container", *args, **kwargs)
+        return _RecordingColumn()
+
     def values(self, name: str) -> list:
         return [args[0] for call, args, _ in self.calls if call == name]
 

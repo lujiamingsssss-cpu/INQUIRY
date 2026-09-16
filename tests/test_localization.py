@@ -49,6 +49,7 @@ ONE_SHOT_KEYS = {
     "source.title",
     "source.caption",
     "source.physical_page",
+    "source.open_original",
     "readiness.title",
     "readiness.customer",
     "readiness.internal",

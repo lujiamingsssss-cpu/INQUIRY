@@ -393,11 +393,6 @@ def _render_sources(analysis: InquiryAnalysis, locale: Locale) -> None:
             f"{text('source.physical_page', locale, page=rendered.page_number)} "
             f"of {total_pages}"
         )
-        st.markdown(
-            f"**{rendered.source_file}**  \n"
-            f"{rendered.product} · {physical_page} · "
-            f"{rendered.date_revision} · {rendered.jurisdiction}"
-        )
         alt_text = (
             f"{rendered.product}, {rendered.source_file}, "
             f"physical page {rendered.page_number} of {total_pages}"
@@ -407,27 +402,42 @@ def _render_sources(analysis: InquiryAnalysis, locale: Locale) -> None:
             f"{rendered.page_number} of {total_pages} · {rendered.date_revision} · "
             f"{rendered.jurisdiction}"
         )
-        st.html(
-            build_zoomable_page_html(
-                rendered.png_bytes,
-                alt_text=alt_text,
-                source_metadata=source_metadata,
-            ),
-            unsafe_allow_javascript=True,
-        )
-        if st.button(
-            f"Open original PDF page {rendered.page_number}",
-            key=(
-                "open_original_pdf_"
-                + hashlib.sha256(
-                    (
-                        f"{rendered.product}\0{rendered.source_file}\0"
-                        f"{rendered.page_number}"
-                    ).encode("utf-8")
-                ).hexdigest()[:16]
-            ),
-        ):
-            _open_original_pdf_dialog(citation, approved)
+        # 左右布局：原页在左，文件信息与操作在右。复用邮件区既有的两栏样式，
+        # 不新增 CSS，保证设计语言不变。
+        with st.container(key="ctc_email_layout"):
+            viewer_column, side_column = st.columns([3, 1])
+            with side_column:
+                st.markdown(f"**{rendered.source_file}**")
+                st.caption(
+                    f"{rendered.product} · {physical_page} · "
+                    f"{rendered.date_revision} · {rendered.jurisdiction}"
+                )
+                if st.button(
+                    text(
+                        "source.open_original",
+                        locale,
+                        page=rendered.page_number,
+                    ),
+                    key=(
+                        "open_original_pdf_"
+                        + hashlib.sha256(
+                            (
+                                f"{rendered.product}\0{rendered.source_file}\0"
+                                f"{rendered.page_number}"
+                            ).encode("utf-8")
+                        ).hexdigest()[:16]
+                    ),
+                ):
+                    _open_original_pdf_dialog(citation, approved)
+            with viewer_column:
+                st.html(
+                    build_zoomable_page_html(
+                        rendered.png_bytes,
+                        alt_text=alt_text,
+                        source_metadata=source_metadata,
+                    ),
+                    unsafe_allow_javascript=True,
+                )
 
 
 def _render_readiness(analysis: InquiryAnalysis, locale: Locale) -> None:
