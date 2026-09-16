@@ -1,0 +1,20 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    CHEMICAL_TRADE_MATERIALS_ROOT=/app/deploy/materials \
+    CHEMICAL_TRADE_MATERIAL_CATALOG=/app/materials_catalog.json
+
+WORKDIR /app
+
+COPY pyproject.toml ./
+COPY src ./src
+RUN pip install --no-cache-dir .
+
+COPY .streamlit ./.streamlit
+COPY materials_catalog.json ./materials_catalog.json
+COPY deploy ./deploy
+
+EXPOSE 80
+
+CMD ["sh", "-c", "runtime_dir=$(mktemp -d /tmp/chemical-trade-chroma.XXXXXX) && cp -a /app/deploy/chroma \"$runtime_dir/chroma\" && export CHEMICAL_TRADE_DATABASE=\"$runtime_dir/chroma\" && exec python -m streamlit run src/chemical_trade_copilot/streamlit_app.py --server.address=0.0.0.0 --server.port=${PORT:-80} --server.headless=true --browser.gatherUsageStats=false"]

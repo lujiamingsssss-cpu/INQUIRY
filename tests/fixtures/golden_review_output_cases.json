@@ -1,0 +1,347 @@
+[
+  {
+    "id": "outdoor_metal_80c_fast_dry",
+    "case_type": "review_output",
+    "calibration_basis": "public_source_proxy_pending_target_company_validation",
+    "target_company_validation_status": "deferred_until_after_demo",
+    "public_proxy_sources": [
+      {
+        "title": "Guide to Protective Coatings Inspection and Maintenance",
+        "url": "https://www.usbr.gov/tsc/techreferences/mands/mands-pdfs/GuideToProtectiveCoatingsInspectionMaintenance2012_508.pdf",
+        "authority": "government_guidance",
+        "source_role": "ambiguity_basis",
+        "supports": "Drying, handling, recoating, and full cure are distinct coating states tied to referenced temperature and humidity.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      },
+      {
+        "title": "Willing To Buy Epoxy Resin",
+        "url": "https://www.tradewheel.com/buyers/willing-to-buy-epoxy-resin/812580/",
+        "authority": "public_marketplace_unverified",
+        "source_role": "inquiry_pattern",
+        "supports": "Public buyer wording combines broad performance requests such as chemical resistance, durability, and fast curing without test conditions.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      }
+    ],
+    "inquiry": "We need an epoxy resin for outdoor metal coatings. The coating will be cured at 80°C and should dry quickly.",
+    "retrieval_case_ids": [],
+    "expected_explicit_facts": [
+      {"text": "epoxy resin", "category": "technical", "source": "original_inquiry"},
+      {"text": "outdoor metal coatings", "category": "technical", "source": "original_inquiry"},
+      {"text": "cured at 80°C", "category": "technical", "source": "original_inquiry"},
+      {"text": "dry quickly", "category": "technical", "source": "original_inquiry"}
+    ],
+    "expected_ambiguities": [
+      {
+        "original_phrase": "dry quickly",
+        "required_behavior": "retain_as_ambiguous_and_do_not_convert_to_a_precise_performance_claim",
+        "interpretations_calibration_status": "pending_target_company_technical_review"
+      }
+    ],
+    "required_outputs": [
+      "separate_explicit_facts_from_system_hypotheses",
+      "show_only_evidence_backed_internal_candidates_if_retrieval_finds_relevant_material",
+      "keep_final_judgment_with_technical_reviewer"
+    ],
+    "forbidden_outputs": [
+      "treat_fast_dry_as_a_precise_test_result",
+      "invent_a_curing_agent_mix_ratio_or_process",
+      "present_an_internal_candidate_as_an_external_recommendation"
+    ],
+    "confirmed_expert_assertions": [],
+    "pending_expert_assertions": [
+      {
+        "kind": "application_process",
+        "proposal": "Candidate interpretations and missing processing conditions for fast drying",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "follow_up_priority",
+        "proposal": "Which missing conditions block an internal suitability judgment",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "product_applicability",
+        "proposal": "Whether any retrieved product is technically suitable",
+        "calibration_status": "pending_target_company_technical_review"
+      }
+    ],
+    "expert_decision": "pending",
+    "external_recommendation_allowed": false
+  },
+  {
+    "id": "concrete_floor_ambient_chemical_resistance",
+    "case_type": "review_output",
+    "calibration_basis": "public_source_proxy_pending_target_company_validation",
+    "target_company_validation_status": "deferred_until_after_demo",
+    "public_proxy_sources": [
+      {
+        "title": "Selecting a Seamless Floor System",
+        "url": "https://industrial.sherwin-williams.com/na/us/en/resin-flooring/contractor-center/technical-articles/seamless-floor-specification-cost-use-schedule.html",
+        "authority": "manufacturer_guidance",
+        "source_role": "ambiguity_basis",
+        "supports": "Floor-system selection depends on chemical exposure, traffic, wet or dry environment, UV exposure, maintenance, and substrate condition.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      },
+      {
+        "title": "Technical Support Request",
+        "url": "https://permabond.com/technical-support-request/",
+        "authority": "manufacturer_guidance",
+        "source_role": "ambiguity_basis",
+        "supports": "A manufacturer support intake asks for substrates, cure mechanism, operating conditions, and chemical exposure duration, concentration, and frequency.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      }
+    ],
+    "inquiry": "The customer needs an epoxy resin for a concrete floor, cured at ambient temperature, with chemical resistance.",
+    "retrieval_case_ids": [],
+    "expected_explicit_facts": [
+      {"text": "epoxy resin", "category": "technical", "source": "original_inquiry"},
+      {"text": "concrete floor", "category": "technical", "source": "original_inquiry"},
+      {"text": "cured at ambient temperature", "category": "technical", "source": "original_inquiry"},
+      {"text": "chemical resistance", "category": "technical", "source": "original_inquiry"}
+    ],
+    "expected_ambiguities": [
+      {
+        "original_phrase": "chemical resistance",
+        "required_behavior": "retain_without_inventing_the_chemical_exposure_or_acceptance_threshold",
+        "interpretations_calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "original_phrase": "ambient temperature",
+        "required_behavior": "retain_without_inventing_a_temperature_humidity_or_cure_completion_definition",
+        "interpretations_calibration_status": "pending_target_company_technical_review"
+      }
+    ],
+    "required_outputs": [
+      "separate_explicit_facts_from_system_hypotheses",
+      "identify_missing_evidence_without_selecting_a_product_for_the_reviewer",
+      "keep_final_judgment_with_technical_reviewer"
+    ],
+    "forbidden_outputs": [
+      "assume_acid_alkali_solvent_concentration_temperature_or_exposure_duration",
+      "invent_a_curing_agent_mix_ratio_or_application_process",
+      "ask_the_customer_to_guess_a_product_model",
+      "present_an_internal_candidate_as_an_external_recommendation"
+    ],
+    "confirmed_expert_assertions": [],
+    "pending_expert_assertions": [
+      {
+        "kind": "chemical_resistance",
+        "proposal": "Which exposure details and acceptance criteria are technically necessary",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "application_process",
+        "proposal": "Which substrate and curing conditions must be confirmed",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "follow_up_priority",
+        "proposal": "How the confirmed questions should be prioritized",
+        "calibration_status": "pending_target_company_technical_review"
+      }
+    ],
+    "expert_decision": "pending",
+    "external_recommendation_allowed": false
+  },
+  {
+    "id": "germany_best_price_one_month_delivery",
+    "case_type": "review_output",
+    "calibration_basis": "public_source_proxy_pending_target_company_validation",
+    "target_company_validation_status": "deferred_until_after_demo",
+    "public_proxy_sources": [
+      {
+        "title": "Epoxy Resins Importers and Buyer RFQs",
+        "url": "https://www.exporthub.com/importers/epoxy-resins/",
+        "authority": "public_marketplace_unverified",
+        "source_role": "inquiry_pattern",
+        "supports": "Public RFQs commonly combine quantity, best quotation, delivery timeframe, destination, stock, and shipping questions in one short inquiry.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      },
+      {
+        "title": "Incoterms 2020: A practical guide to C and D rules",
+        "url": "https://academy.iccwbo.org/incoterms/article/incoterms-2020-c-or-d-rules/",
+        "authority": "trade_rules_authority",
+        "source_role": "business_logistics_boundary",
+        "supports": "Delivery, risk transfer, destination, freight responsibility, and named place depend on the agreed Incoterms rule and cannot be inferred from a country name alone.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      }
+    ],
+    "inquiry": "We need 10 metric tons of epoxy resin at your best price, delivered to Germany within one month.",
+    "retrieval_case_ids": [],
+    "expected_explicit_facts": [
+      {"text": "10 metric tons", "category": "commercial", "source": "original_inquiry"},
+      {"text": "best price", "category": "commercial", "source": "original_inquiry"},
+      {"text": "Germany", "category": "logistics", "source": "original_inquiry"},
+      {"text": "within one month", "category": "logistics", "source": "original_inquiry"}
+    ],
+    "expected_ambiguities": [
+      {"original_phrase": "best price", "required_behavior": "mark_as_missing_comparable_commercial_terms"},
+      {"original_phrase": "Germany", "required_behavior": "mark_as_an_incomplete_destination"},
+      {"original_phrase": "within one month", "required_behavior": "preserve_the_dispatch_versus_arrival_ambiguity"}
+    ],
+    "required_outputs": [
+      "classify_price_and_quantity_as_commercial",
+      "classify_destination_and_delivery_window_as_logistics",
+      "state_that_business_staff_must_confirm_price_stock_packaging_payment_currency_terms_lead_time_and_freight",
+      "state_that_tds_sds_do_not_answer_price_or_delivery_commitments"
+    ],
+    "forbidden_outputs": [
+      "attach_unrelated_tds_or_sds_evidence",
+      "infer_price_stock_terms_lead_time_or_freight_from_tds_sds",
+      "collapse_the_result_into_generic_technical_insufficient_evidence",
+      "promise_price_or_delivery"
+    ],
+    "confirmed_expert_assertions": [],
+    "pending_expert_assertions": [],
+    "expert_decision": "pending",
+    "external_recommendation_allowed": false
+  },
+  {
+    "id": "baer_development_and_experimental_limits",
+    "case_type": "review_output",
+    "calibration_basis": "public_source_proxy_pending_target_company_validation",
+    "target_company_validation_status": "deferred_until_after_demo",
+    "public_proxy_sources": [
+      {
+        "title": "BAER XP9500 Technical Data Sheet",
+        "url": "https://cdn.acstech.com/files/acs-baer-xp9500-technical-data-sheet.pdf",
+        "authority": "manufacturer_tds",
+        "source_role": "evidence_limitation",
+        "supports": "Physical page 1 labels BAER XP9500 as Under Product Development and states that applications should be tested before commercialization.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      },
+      {
+        "title": "BAER XP9500 Safety Data Sheet",
+        "url": "https://cdn.acstech.com/files/acs-baer-xp9500-safety-data-sheet.pdf",
+        "authority": "manufacturer_sds",
+        "source_role": "evidence_limitation",
+        "supports": "Physical page 1 identifies the product use as FOR EXPERIMENTAL USE ONLY.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      }
+    ],
+    "inquiry": "Review BAER XP9500 as an internal candidate and show all development or experimental-use limitations before anyone decides whether it may be discussed with the customer.",
+    "retrieval_case_ids": [
+      "baer_product_development_limit_en",
+      "baer_experimental_use_limit_en",
+      "baer_xp9500_unsupported_continuous_service_temperature_en"
+    ],
+    "expected_explicit_facts": [
+      {"text": "BAER XP9500", "category": "technical", "source": "original_inquiry"},
+      {"text": "internal candidate", "category": "technical", "source": "original_inquiry"},
+      {"text": "development or experimental-use limitations", "category": "technical", "source": "original_inquiry"}
+    ],
+    "expected_ambiguities": [],
+    "required_outputs": [
+      "cite_tds_page_1_for_under_product_development",
+      "cite_sds_page_1_for_experimental_use_only",
+      "show_document_date_jurisdiction_and_applicable_limitations",
+      "keep_internal_candidate_separate_from_external_recommendation"
+    ],
+    "forbidden_outputs": [
+      "hide_product_development_status",
+      "hide_experimental_use_only_status",
+      "convert_flash_point_or_storage_limit_to_continuous_service_temperature",
+      "present_an_internal_candidate_as_an_external_recommendation"
+    ],
+    "confirmed_expert_assertions": [],
+    "pending_expert_assertions": [
+      {
+        "kind": "product_applicability",
+        "proposal": "Whether BAER XP9500 is technically suitable for any customer application",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "external_recommendation_permission",
+        "proposal": "Whether the documented development and experimental limits permit customer-facing discussion",
+        "calibration_status": "pending_target_company_technical_review"
+      }
+    ],
+    "expert_decision": "pending",
+    "external_recommendation_allowed": false
+  },
+  {
+    "id": "unsupported_200c_food_contact_lifetime",
+    "case_type": "review_output",
+    "calibration_basis": "public_source_proxy_pending_target_company_validation",
+    "target_company_validation_status": "deferred_until_after_demo",
+    "public_proxy_sources": [
+      {
+        "title": "NIOSH Pocket Guide to Chemical Hazards Introduction",
+        "url": "https://www.cdc.gov/niosh/npg/pgintrod.html",
+        "authority": "government_guidance",
+        "source_role": "evidence_limitation",
+        "supports": "Flash point is an ignition-related physical property, not a continuous service temperature rating.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      },
+      {
+        "title": "Determining the Regulatory Status of Components of a Food Contact Material",
+        "url": "https://www.fda.gov/food/packaging-food-contact-substances-fcs/determining-regulatory-status-components-food-contact-material",
+        "authority": "government_guidance",
+        "source_role": "regulatory_boundary",
+        "supports": "Food-contact status depends on substance identity, manufacturer, intended use, specifications, and limitations; it cannot be inferred from a generic TDS or SDS.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      },
+      {
+        "title": "BAER XP9500 Technical Data Sheet",
+        "url": "https://cdn.acstech.com/files/acs-baer-xp9500-technical-data-sheet.pdf",
+        "authority": "manufacturer_tds",
+        "source_role": "evidence_limitation",
+        "supports": "The sheet separately reports cure conditions and flash point, so the flash-point number must not be relabeled as continuous service performance.",
+        "may_confirm_professional_assertions": false,
+        "retrieved_on": "2026-07-29"
+      }
+    ],
+    "inquiry": "Recommend an epoxy coating for continuous service at 200°C, provide food-contact certification, and confirm long-term service life.",
+    "retrieval_case_ids": [
+      "unsupported_continuous_service_temperature_zh"
+    ],
+    "expected_explicit_facts": [
+      {"text": "continuous service at 200°C", "category": "technical", "source": "original_inquiry"},
+      {"text": "food-contact certification", "category": "compliance", "source": "original_inquiry"},
+      {"text": "long-term service life", "category": "technical", "source": "original_inquiry"}
+    ],
+    "expected_ambiguities": [],
+    "required_outputs": [
+      "separate_technical_compliance_and_lifetime_evidence_gaps",
+      "state_that_current_evidence_does_not_support_the_requested_claims",
+      "block_external_recommendation",
+      "keep_final_judgment_with_technical_reviewer"
+    ],
+    "forbidden_outputs": [
+      "use_hdt_flash_point_decomposition_or_storage_temperature_as_continuous_service_temperature",
+      "invent_food_contact_certification",
+      "invent_long_term_service_life",
+      "recommend_a_product_without_supporting_evidence"
+    ],
+    "confirmed_expert_assertions": [],
+    "pending_expert_assertions": [
+      {
+        "kind": "performance_boundary",
+        "proposal": "What evidence would be sufficient to assess 200°C continuous service and lifetime",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "follow_up_priority",
+        "proposal": "Which missing evidence or customer questions should block further review",
+        "calibration_status": "pending_target_company_technical_review"
+      },
+      {
+        "kind": "external_recommendation_permission",
+        "proposal": "Whether any future evidence would permit a customer-facing recommendation",
+        "calibration_status": "pending_target_company_technical_review"
+      }
+    ],
+    "expert_decision": "pending",
+    "external_recommendation_allowed": false
+  }
+]

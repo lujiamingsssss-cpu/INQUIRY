@@ -1,0 +1,31 @@
+# 运行时与产物（不入版本控制）
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 密钥与本机状态（严禁入库）
+.env
+.env.local
+.env.*.local
+.vercel/
+
+# 索引与部署资料（正式资料根在仓库外，见 PROJECT_SPEC.md）
+.chroma/
+.chroma.backup/
+.chroma.staging/
+.chroma.rollback/
+.chroma.recovery/
+deploy/
+
+# 运行与临时产物
+output/
+tmp/
+.playwright-cli/
+artifacts/
+dist/
+build/
+*.egg-info/
+.worktrees/

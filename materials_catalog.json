@@ -1,0 +1,69 @@
+[
+  {
+    "product": "D.E.R. 331",
+    "relative_path": "D.E.R. 331/SDS - Olin D.E.R. 331 - Canada EN - 2020.pdf",
+    "document_type": "SDS",
+    "date_revision": "2020",
+    "jurisdiction": "Canada · English SDS",
+    "enabled": true,
+    "sha256": "5dad2104163cd39d7bd7c4642a83645cf7b00b2409856fc51a565e502128061e",
+    "source_url": "urn:legacy:phase-one-approved",
+    "acquired_on": "2026-07-28"
+  },
+  {
+    "product": "D.E.R. 331",
+    "relative_path": "D.E.R. 331/TDS - DOW D.E.R. 331 - 2009.pdf",
+    "document_type": "TDS",
+    "date_revision": "2009",
+    "jurisdiction": "Technical data sheet · jurisdiction not stated",
+    "enabled": true,
+    "sha256": "2670338cd83baf5ac00c1fa65fd3cd25648e0897665ba0313708a52caf48e7d3",
+    "source_url": "urn:legacy:phase-one-approved",
+    "acquired_on": "2026-07-28"
+  },
+  {
+    "product": "EPON Resin 8280",
+    "relative_path": "EPON Resin 8280/SDS - Westlake EPON Resin 8280 - US EN - 2022.pdf",
+    "document_type": "SDS",
+    "date_revision": "2022",
+    "jurisdiction": "United States · English SDS",
+    "enabled": true,
+    "sha256": "9177c6cd1055b36b69f6a8f835db4d5ace95265efca0078fad795a441a9c4858",
+    "source_url": "urn:legacy:phase-one-approved",
+    "acquired_on": "2026-07-28"
+  },
+  {
+    "product": "EPON Resin 8280",
+    "relative_path": "EPON Resin 8280/TDS - Hexion EPON Resin 8280 - Rev 2016.pdf",
+    "document_type": "TDS",
+    "date_revision": "Reissued 2005 · footer revision 2016",
+    "jurisdiction": "Technical data sheet · jurisdiction not stated",
+    "enabled": true,
+    "sha256": "43c7c97572b1f0e89977898eb578b128de82ceabfbc47336fd21c43a66ee7eca",
+    "source_url": "urn:legacy:phase-one-approved",
+    "acquired_on": "2026-07-28"
+  },
+  {
+    "product": "BAER XP9500",
+    "relative_path": "BAER XP9500/SDS - ACS BAER XP9500.pdf",
+    "document_type": "SDS",
+    "date_revision": "Revised 2018-06-28",
+    "jurisdiction": "United States · English SDS",
+    "enabled": true,
+    "sha256": "c610278d91b10c4723d65a11d51b4994b89e39beaaf70b278af9b83d7a05ee7d",
+    "source_url": "https://cdn.acstech.com/files/acs-baer-xp9500-safety-data-sheet.pdf",
+    "acquired_on": "2026-07-28",
+    "document_identity": "XP-9500"
+  },
+  {
+    "product": "BAER XP9500",
+    "relative_path": "BAER XP9500/TDS - ACS BAER XP9500.pdf",
+    "document_type": "TDS",
+    "date_revision": "Revision 09132018",
+    "jurisdiction": "Technical data sheet · jurisdiction not stated",
+    "enabled": true,
+    "sha256": "3bb0b1c4b298ee4b37ccc7c5b4a078290feae2b77bad7395e4ace12d76c111ae",
+    "source_url": "https://cdn.acstech.com/files/acs-baer-xp9500-technical-data-sheet.pdf",
+    "acquired_on": "2026-07-28"
+  }
+]

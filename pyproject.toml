@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chemical-trade-copilot"
+version = "0.1.0"
+description = "Evidence-grounded retrieval for an industrial coatings trade copilot"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "chromadb>=1.5,<1.6",
+  "langchain-text-splitters>=1.0,<2",
+  "openai>=2.48,<3",
+  "pydantic>=2.13,<3",
+  "pymupdf>=1.28,<1.29",
+  "sentence-transformers>=5.6,<5.7",
+  "streamlit[pdf]>=1.60,<1.61",
+  "streamlit-pdf>=2.0.1,<2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0,<10",
+  "pytest-cov>=7.0,<8",
+]
+
+[project.scripts]
+chemical-trade-copilot = "chemical_trade_copilot.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/chemical_trade_copilot"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+testpaths = ["tests"]
