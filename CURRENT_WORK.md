@@ -44,8 +44,23 @@
 ## Temporary Artifacts
 
 - 无长期临时产物。验证用截图与探针脚本置于系统临时目录，任务收口时删除。
+- `deploy/`、`.chroma/`、`.env.local`、`.vercel/` 等本机/部署产物未纳入版本控制，见 `.gitignore`。
+
+## Progress
+
+- 已删除：`review_workspace` / `review_email` / `review_email_generation` / `review_translation`
+  及其测试、`Dockerfile.vercel`、`.dockerignore`。
+- 已内联解析链（`workflow.py`），门禁模块 `inquiry_analysis.py` 仅改 API 客户端参数。
+- 已新增 `export_bundle.py`（内存生成 Markdown 与可打印 HTML）与单页 `streamlit_app.py`。
+- 已修本地化缺口：中英混排、`公开演示`/Vercel 措辞、硬编码进度提示。
+- 已移除对分析结果无影响的目标市场下拉（装饰性输入）。
+- 测试 164 项全绿（含新增 `test_export_bundle.py`、重写的 `test_streamlit_app.py` 与
+  `test_localization.py`、`test_workflow.py`）。
+- 已提交并推送：`2d7e68b`、`4ba99f0`（分支 `rework/one-shot`）。
 
 ## Unique Next Action
 
-核对模块依赖图，确认待删模块（review_workspace / review_email / review_email_generation /
-review_translation）没有被保留模块依赖，然后开始改造。
+真实端到端验证（尚未执行，也是当前唯一缺口）：以真实模型与索引启动单页应用，跑一条正向询盘
+与一条负向询盘，确认结论、事实卡、来源页、回复草稿与两个导出文件都正确，并留存界面证据以确认
+UI 设计语言未变；通过后将 `rework/one-shot` 合并到 `main`，并删除本文件。
+
