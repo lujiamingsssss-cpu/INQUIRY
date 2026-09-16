@@ -64,8 +64,13 @@ from chemical_trade_copilot.ui_presenter import (
     build_analysis_view,
     build_email_draft,
 )
+from chemical_trade_copilot.local_settings import load_local_settings
 from chemical_trade_copilot.workflow import analyze_inquiry_with_evidence
 
+
+# 本机配置（模型密钥、资料根目录）由应用自己从 .env.local 读取，
+# 因此双击启动脚本不需要解析配置文件，也不受代码页或 BOM 影响。
+load_local_settings()
 
 DEFAULT_MATERIALS_ROOT = Path(r"G:\桌面\化工")
 DEFAULT_DATABASE = Path(".chroma")
@@ -402,10 +407,9 @@ def _render_sources(analysis: InquiryAnalysis, locale: Locale) -> None:
             f"{rendered.page_number} of {total_pages} · {rendered.date_revision} · "
             f"{rendered.jurisdiction}"
         )
-        # 左右布局：原页在左，文件信息与操作在右。复用邮件区既有的两栏样式，
-        # 不新增 CSS，保证设计语言不变。
-        with st.container(key="ctc_email_layout"):
-            viewer_column, side_column = st.columns([3, 1])
+        # 左右两栏：缩略图贴左按自身宽度，文件身份与操作占满剩余宽度。
+        with st.container(key="ctc_source_layout"):
+            viewer_column, side_column = st.columns([1, 3])
             with side_column:
                 st.markdown(f"**{rendered.source_file}**")
                 st.caption(

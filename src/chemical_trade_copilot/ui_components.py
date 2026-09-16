@@ -47,6 +47,20 @@ APP_CSS = """
   border-left: 1px solid var(--ctc-line);
   padding-left: 22px;
 }
+/* 来源行：缩略图按自身宽度贴左，文件身份与操作占满剩余宽度。
+   与邮件区同一套网格、间距与分隔线，只是栏宽按内容分配。 */
+.st-key-ctc_source_layout [data-testid="stHorizontalBlock"] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 38px;
+  align-items: start;
+}
+.st-key-ctc_source_layout [data-testid="stColumn"] { width: 100% !important; }
+.st-key-ctc_source_layout [data-testid="stColumn"]:first-child { width: auto !important; }
+.st-key-ctc_source_layout [data-testid="stColumn"]:last-child {
+  border-left: 1px solid var(--ctc-line);
+  padding-left: 22px;
+}
 [data-testid="stSidebar"] { display: none; }
 html, body, .stApp, button, input, textarea, select, label, p {
   font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;

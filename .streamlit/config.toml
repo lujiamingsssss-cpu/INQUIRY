@@ -3,6 +3,9 @@ toolbarMode = "minimal"
 
 [server]
 fileWatcherType = "none"
+# 首次运行不再弹出邮箱提示，双击启动脚本时不会被它挡住
+showEmailPrompt = false
+headless = false
 
 [theme]
 base = "light"

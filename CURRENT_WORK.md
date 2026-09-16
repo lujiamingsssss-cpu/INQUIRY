@@ -1,79 +1,108 @@
 # Current Work: 化工询盘台改造为「业务员一次性工具」
 
+**Status: 暂停待接管**（用户要求有序中断并交接）
+**Branch**: `rework/one-shot`　**Remote**: `github.com/lujiamingsssss-cpu/INQUIRY`　**Repo**: `F:\化工询盘台`
+
 ## Objective
 
-在 `F:\化工询盘台`（双语版唯一正式基线）上去掉审阅工作流的形式主义，做成业务员肯用的一次性工具：
-输入询盘 → 证据约束的结论 → 导出 → 关闭，**不持久化任何数据**。
+把双语版工作台改造成业务员肯用的一次性工具：输入询盘 → 证据约束的结论 → 导出 → 关闭，
+**不持久化任何数据**。
 
-## Active Scope
+## Active Scope（除"待办"外均已完成）
 
-保留并强化：证据门禁与失败关闭、来源页查看（真实 PDF 物理页）、已核验事实卡（条件绑定）、四态决策行、
-复核卡中的询盘事实/歧义/边界/追问、英文邮件草稿、**导出**。
-
-删除：审阅工作区与状态持久化、记录页与修订哈希、备份/恢复、打印页、决定页与内部候选下拉、
-机器翻译、8 页编号导航、Vercel/Docker 部署件。
-
-新增：单页界面；内存生成 Markdown 与可打印 HTML 导出；进度提示说人话。
-
-界面语言：保留双语静态文案，清除硬编码中英混排（含英文界面里的中文翻译提示）。
+- 单页化：删除 8 页导航、审阅记录/修订哈希、备份恢复、打印页、决定页与内部候选下拉、
+  逐页机器翻译；删除 `review_workspace` / `review_email` / `review_email_generation` /
+  `review_translation` 及其测试。
+- 解析链不变：`workflow` 内联回「检索 → 证据合并 → 门禁分析」三步，送入模型的证据集合不裁剪；
+  `inquiry_analysis` 仅改 API 客户端参数（关闭思考模式 + 45s 超时 + `max_retries=0`）。
+- 保留复核卡（询盘事实 / 歧义 / 边界 / 追问，纯本地计算，零模型调用）。
+- 导出：内存生成 Markdown 与可打印 HTML。
+- UI 语言不变：`APP_CSS` 原有规则未改，仅**新增** `.st-key-ctc_source_layout` 一条布局规则
+  （用户明确要求来源页左右分栏）。
+- 来源页：缩略图去边框去底色、贴左并按自身宽度；文件信息与操作占满右栏；
+  新增本地化键 `source.open_original`。
+- 本地化缺口修复：中英混排、`公开演示`/Vercel 措辞、硬编码进度提示、英文按钮。
+- 独立环境：`.venv`（Python 3.11.9）+ 依赖齐备 + **本仓库自己的索引** `.chroma`
+  （45 页、`status=ready`、golden gate 7 例 hit@3=1.0）。
+- 双击启动脚本 `启动化工询盘台.bat`（CRLF / 纯 ASCII / 无 BOM）、`README.md`、`.env.example`。
+- 应用自己读取 `.env.local`（`utf-8-sig`，兼容 BOM），不再依赖脚本解析配置。
+- 代理环境兼容修复：`chemical_trade_copilot.__init__.sanitize_no_proxy`。
+- 测试 **178 项全绿**（使用本仓库 venv 运行）。
 
 ## Non-goals
 
-- 不改 UI 设计语言：`ui_components.APP_CSS` 逐字节不动。
-- 不改解析链：`inquiry_analysis.py` 的门禁、白名单、事实绑定、提示词；`retrieval.py`/`materials.py`/`pdf_pages.py`。
-- 不为省钱削减送入分析模型的证据集合（`merge_ranked_with_corpus` 行为不变）。
-- 不做存储、账号、云端服务、多用户、历史记录。
+- 不改解析链：门禁、事实白名单、条件绑定、提示词、检索与资料模块。
+- 不新增依赖、服务、持久化、审批流程。
 
 ## Authoritative State
 
-- 仓库：`F:\化工询盘台`；`main` = 保留基线 `70a9227`；工作分支 `rework/one-shot`。
-- 远端：`https://github.com/lujiamingsssss-cpu/INQUIRY`（推送已验证可用）。
-- 基线来源与已知缺陷见 `PRESERVATION.md`。
+- `rework/one-shot` 为本次改造分支，最新提交见 `git log`（与本文件同批提交）。
+- `main` = 保留基线（`70a9227`、`47109fa`）。**尚未合并**——用户要求先人工检查。
+- 远端 `main` 与 `rework/one-shot` 均已推送，工作区干净。
 
 ## Approval and Rollback
 
-- 人工批准：去形式主义 + 一次性工具 + 不存数据 + 支持导出 + UI 风格不变 —— 用户已明确批准。
-- 回滚：`git checkout main`；基线完整且逐字节可复现。
+- 已批准：去形式主义、做成一次性工具、不存数据、支持导出、UI 风格不变、
+  建独立虚拟环境与启动脚本、来源页布局调整。
+- **明确未批准：合并到 `main`**（用户："跑完先不要合并，先人工检查"）。
+- 回滚：`git checkout main`，或 `git reset --hard 70a9227`。
 
-## Complexity Budget
+## Latest Verification（真实模型 + 真索引，本仓库 venv）
 
-- 允许改动：`workflow.py`、`streamlit_app.py`、`localization.py`、`inquiry_analysis.py`（仅 API 客户端参数）、
-  新增 `export_bundle.py` 及对应测试。
-- 禁止：新依赖、新服务、新持久化、第二套解析链、新增审批流程。
+- 正向询盘（MPDA/HDT）：`supported`，21–24 秒；结论、四态决策行、条件绑定事实卡、来源原页齐全。
+- 负向询盘（200°C 连续使用 + 食品接触）：`insufficient`，不推荐产品、无参数卡。
+- 导出：Markdown 2 558 B、可打印 HTML 13 890 B。
+- **不落盘**：运行前后仓库文件数 92 → 92。
+- golden 门禁：7 例，hit@3 = 1.0；`pip check` 无破损依赖。
+- 证据与截图：`G:\桌面\单页版验证`（中英各 9 张 + 两个导出样例）。
+
+## Known Behaviour（不是回归，但需要产品决策）
+
+门禁对模型输出做确定性校验。实测同一询盘 4 次中 1 次被拒，原因：
+
+```
+temperature values are allowed only in verified key parameters
+```
+
+即模型把温度值写进了自由叙述，而非只放在已核验参数对象里。被拒后应用重试一次，
+仍不合格即降级为"证据不足"。代价是多一次模型调用，且用户看到的是"证据不足"而非支持结论。
+这是门禁按设计工作；是否收紧提示词以降低被拒率，留待用户决定。
+
+## Pitfalls（新会话必读，避免重复踩）
+
+1. **`NO_PROXY` 含方括号 IPv6（如 `[::1]`）会让 httpx 构造客户端抛 `InvalidURL`**，
+   表现为向量模型加载与模型 API 调用整体失败（命令行重建索引崩溃、启动脚本一启就报错）。
+   已由 `chemical_trade_copilot.__init__` 在导入时清洗；不要在别处再用原始取值起进程。
+2. **批处理脚本必须 CRLF**；`if (...)` 块内的 `echo` 文本不得含未转义括号
+   （曾因 `Build it first (see README.md):` 的 `)` 提前闭合块而报 `': was unexpected'`）；
+   Streamlit 首次运行邮箱提示需 `server.showEmailPrompt=false`，否则双击启动会卡住。
+3. **`.env.local` 若带 UTF-8 BOM，批处理 `for /f` 会把首行键名读错且不报错**。
+   配置已改由应用读取（`utf-8-sig`）；不要退回脚本解析。
+4. **Streamlit 主区域是内部滚动容器**，Playwright `fullPage` 截图会被截断在视口高度；
+   需注入 CSS 解除内部滚动（脚本：`C:\Users\HUGO\AppData\Local\Temp\ctc_full_shots.js`）。
+5. 本仓库 `.chroma` 不入 Git；干净检出上必须先 `cli rebuild` 才有索引。
+6. `.worktrees/technical-review-o1` 无有效 Git 元数据，且其 `.env.local` **含凭据**，
+   不得复制、提交或外发。
+7. 覆盖桌面截图前确认图片未被看图工具占用，否则写入报 `UNKNOWN: unknown error`；
+   稳妥做法是先截到临时目录再复制。
 
 ## Temporary Artifacts
 
-- 无长期临时产物。验证用截图与探针脚本置于系统临时目录，任务收口时删除。
-- `deploy/`、`.chroma/`、`.env.local`、`.vercel/` 等本机/部署产物未纳入版本控制，见 `.gitignore`。
+- 系统临时目录中的 `ctc_*.py`、`ctc_*.js`、`ctc_oneshot_verify\`、`ctc_*_shots\`：
+  本次任务的探针与截图脚本，可删。
+- `F:\化工询盘台\.env.local`：本机配置（**含密钥**），已被 Git 忽略，不要提交或外发。
+- `F:\化工询盘台\.chroma`：本机索引，可重建，不入 Git。
 
-## Progress
+## Verification Commands
 
-- 已删除：`review_workspace` / `review_email` / `review_email_generation` / `review_translation`
-  及其测试、`Dockerfile.vercel`、`.dockerignore`。
-- 已内联解析链（`workflow.py`），门禁模块 `inquiry_analysis.py` 仅改 API 客户端参数。
-- 已新增 `export_bundle.py`（内存生成 Markdown 与可打印 HTML）与单页 `streamlit_app.py`。
-- 已修本地化缺口：中英混排、`公开演示`/Vercel 措辞、硬编码进度提示。
-- 已移除对分析结果无影响的目标市场下拉（装饰性输入）。
-- 测试 164 项全绿（含新增 `test_export_bundle.py`、重写的 `test_streamlit_app.py` 与
-  `test_localization.py`、`test_workflow.py`）。
-- 已提交并推送：`2d7e68b`、`4ba99f0`（分支 `rework/one-shot`）。
-- **真实端到端验证已通过**（2026-09-17，真模型 + 真索引，未打任何运行时补丁）：
-  - 正向询盘（MPDA/HDT）23.8s → 结论、四态决策行、条件绑定的已核验事实卡、来源物理页齐全；
-  - 负向询盘（200°C 连续使用 + 食品接触）29.9s → 不推荐产品、无已核验参数卡；
-  - 导出：Markdown 2 558 B、可打印 HTML 13 890 B，内容含结论/决策行/参数条件/来源/询盘事实/边界/回复草稿；
-  - **不落盘**：运行前后仓库文件数 92 → 92，无任何新增或删除；
-  - 中文界面无英文残留（不再出现 `Public demo` / `Evidence scope`），进度提示已本地化；
-  - UI 设计语言与基线一致（截图与两个导出样例见 `G:\桌面\单页版验证`）。
-- 已知环境缺口：本仓库**尚无自己的虚拟环境**，验证时借用 `F:\半导体材料产品展示\.venv`。
-  这是拆分后仍残留的隐式耦合，需为本仓库建立独立环境后才算真正独立。
-- 人工检查反馈（2026-09-17）：来源页改为**左右两栏**（原页在左，文件信息与操作在右），
-  复用邮件区既有两栏样式，未新增 CSS；同时把中文界面里残留的英文按钮
-  `Open original PDF page N` 改为本地化键 `source.open_original`。
-- 已补：`README.md`、双击启动脚本 `启动化工询盘台.bat`、`.env.example` 全量说明。
+```powershell
+cd F:\化工询盘台
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m chemical_trade_copilot.cli status --catalog materials_catalog.json --database .chroma
+# 或直接双击：启动化工询盘台.bat
+```
 
 ## Unique Next Action
 
-**等待人工检查**（用户明确要求验证通过后先不合并）。人工确认后收口：
-将 `rework/one-shot` 合并到 `main`、删除该分支、删除本文件；同时评估为本仓库建立独立虚拟环境。
-
-
+**等待用户人工检查**（已明确要求"先不要合并"）。检查通过后：把 `rework/one-shot` 合并到 `main`、
+删除该分支、删除本文件；并按上文 Known Behaviour 决定是否收紧提示词以降低被拒率。

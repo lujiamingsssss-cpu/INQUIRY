@@ -238,6 +238,8 @@ def test_entry_is_a_single_page_without_step_navigation(monkeypatch) -> None:
 
 
 def test_entry_states_the_one_shot_scope_and_missing_key(monkeypatch) -> None:
+    # 指向一个不存在的本机配置，隔离真实 .env.local，从而复现"未配置密钥"状态。
+    monkeypatch.setenv("CHEMICAL_TRADE_ENV_FILE", str(APP.parents[2] / "absent.env"))
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
 
     app = AppTest.from_file(str(APP)).run(timeout=60)

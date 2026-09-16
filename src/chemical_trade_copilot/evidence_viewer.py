@@ -104,10 +104,10 @@ def build_zoomable_page_html(
   </div>
 </div>
 <style>
-.ctc-source-thumbnail {{ width:100%; border:1px solid #D7D0C3; border-radius:12px;
-  background:#FBFAF6; padding:12px; color:#316A5D; cursor:zoom-in; text-align:left; }}
-.ctc-source-thumbnail img {{ display:block; width:100%; max-height:260px;
-  object-fit:contain; background:#D2CFC7; }}
+.ctc-source-thumbnail {{ display:inline-block; max-width:100%; border:0; border-radius:0;
+  background:transparent; padding:0; color:#316A5D; cursor:zoom-in; text-align:left; }}
+.ctc-source-thumbnail img {{ display:block; width:auto; max-width:100%; max-height:260px;
+  object-fit:contain; object-position:left top; background:transparent; margin:0; }}
 .ctc-source-thumbnail span {{ display:block; padding-top:9px; font:600 12px Inter,Segoe UI,sans-serif; }}
 .ctc-source-thumbnail:focus-visible,.ctc-source-toolbar button:focus-visible {{ outline:3px solid #A78349; outline-offset:2px; }}
 .ctc-source-overlay {{ position:fixed; inset:0; z-index:999999; background:rgba(16,43,39,.88);

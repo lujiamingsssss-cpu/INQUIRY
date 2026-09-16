@@ -9,6 +9,7 @@ from typing import Any
 
 from .evaluation import load_golden_cases, validate_golden_gate
 from .index_lifecycle import rebuild_index, rollback_index
+from .local_settings import load_local_settings
 from .materials import (
     ApprovedDocument,
     discover_documents,
@@ -94,6 +95,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    load_local_settings()
     args = _parser().parse_args()
     if args.command == "preflight":
         sources, pages, _ = _preflight(args.materials_root, args.catalog)
