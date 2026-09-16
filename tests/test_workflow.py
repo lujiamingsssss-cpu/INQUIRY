@@ -2,14 +2,15 @@ from pathlib import Path
 
 from chemical_trade_copilot.inquiry_analysis import (
     InquiryAnalysis,
-    RequirementAssessment,
     RetrievalPlan,
-    SourceCitation,
 )
 from chemical_trade_copilot.pdf_pages import PageRecord
 from chemical_trade_copilot.retrieval import SearchResult
-from chemical_trade_copilot.workflow import analyze_and_review_inquiry, analyze_inquiry
-from chemical_trade_copilot.workflow import review_inquiry
+from chemical_trade_copilot.workflow import (
+    analyze_inquiry,
+    analyze_inquiry_with_evidence,
+    gather_evidence,
+)
 
 
 class RecordingPlanner:
@@ -66,7 +67,7 @@ def _analysis() -> InquiryAnalysis:
     )
 
 
-def test_analyze_inquiry_reuses_planned_retrieval_and_full_selected_corpus() -> None:
+def _fixtures() -> tuple[SearchResult, PageRecord]:
     source_path = Path("G:/materials/EPON/TDS.pdf")
     ranked = SearchResult(
         text="matching chunk",
@@ -86,6 +87,11 @@ def test_analyze_inquiry_reuses_planned_retrieval_and_full_selected_corpus() -> 
         source_path=source_path,
         page_number=2,
     )
+    return ranked, corpus_page
+
+
+def test_analyze_inquiry_reuses_planned_retrieval_and_full_selected_corpus() -> None:
+    ranked, corpus_page = _fixtures()
     planner = RecordingPlanner()
     index = RecordingIndex(ranked, corpus_page)
     expected = _analysis()
@@ -106,98 +112,32 @@ def test_analyze_inquiry_reuses_planned_retrieval_and_full_selected_corpus() -> 
     assert analyzer.calls == [("customer inquiry", [ranked, corpus_page])]
 
 
-def test_review_inquiry_reuses_analysis_pipeline_and_returns_internal_candidates() -> None:
-    source_path = Path("G:/materials/EPON/TDS.pdf")
-    ranked = SearchResult(
-        text="matching chunk",
-        product="EPON Resin 8280",
-        doc_type="TDS",
-        source_file="TDS.pdf",
-        source_path=source_path,
-        page_number=1,
-        distance=0.1,
-        page_text="full ranked page",
-    )
-    corpus_page = PageRecord(
-        text="another full page",
-        product="EPON Resin 8280",
-        doc_type="TDS",
-        source_file="TDS.pdf",
-        source_path=source_path,
-        page_number=2,
-    )
+def test_gather_evidence_exposes_ranked_and_corpus_without_extra_retrieval() -> None:
+    ranked, corpus_page = _fixtures()
     planner = RecordingPlanner()
     index = RecordingIndex(ranked, corpus_page)
-    analyzer = RecordingAnalyzer(
-        InquiryAnalysis(
-            summary_zh="Private evidence supports an internal review.",
-            recommendation_status="supported",
-            recommended_product="EPON Resin 8280",
-            recommendation_reasons=("Approved document evidence.",),
-            requirements=(
-                RequirementAssessment(
-                    category="technical",
-                    requirement="Review the application evidence.",
-                    status="supported",
-                    evidence=(
-                        SourceCitation(
-                            product="EPON Resin 8280",
-                            source_file="TDS.pdf",
-                            page_number=2,
-                        ),
-                    ),
-                ),
-            ),
-            key_parameters=(),
-            evidence_gaps=(),
-            source_limitations=("Technical reviewer judgment remains required.",),
-            follow_up_questions=(),
-            next_action="needs_technical_confirmation",
-        )
+
+    collected = gather_evidence(
+        "customer inquiry", index=index, planner=planner, limit=3
     )
 
-    card = review_inquiry(
-        "customer inquiry about an epoxy coating",
-        index=index,
-        planner=planner,
-        analyzer=analyzer,
-        limit=3,
-    )
-
-    assert card.internal_candidates[0].product == "EPON Resin 8280"
-    assert card.internal_candidates[0].evidence[0].page_number == 1
-    assert card.requirement_reviews[0].evidence[0].page_number == 2
-    assert planner.inquiries == ["customer inquiry about an epoxy coating"]
-    assert analyzer.calls == [
-        ("customer inquiry about an epoxy coating", [ranked, corpus_page])
-    ]
+    assert collected.plan.search_query == "epoxy coating"
+    assert collected.plan.document_types == ("TDS",)
+    assert collected.ranked == (ranked,)
+    assert collected.evidence == (ranked, corpus_page)
+    assert index.query_calls == [("epoxy coating", 3, ("TDS",))]
+    assert index.page_calls == [("TDS",)]
 
 
-def test_analyze_and_review_returns_both_outputs_from_one_pipeline_run() -> None:
-    source_path = Path("G:/materials/EPON/TDS.pdf")
-    ranked = SearchResult(
-        text="matching chunk",
-        product="EPON Resin 8280",
-        doc_type="TDS",
-        source_file="TDS.pdf",
-        source_path=source_path,
-        page_number=1,
-        distance=0.1,
-    )
-    corpus_page = PageRecord(
-        text="full approved page",
-        product="EPON Resin 8280",
-        doc_type="TDS",
-        source_file="TDS.pdf",
-        source_path=source_path,
-        page_number=1,
-    )
+def test_analyze_with_evidence_uses_one_retrieval_for_analysis_and_review() -> None:
+    """复核卡与分析必须共用同一次检索，既避免重复计算，也避免两者证据不一致。"""
+    ranked, corpus_page = _fixtures()
     planner = RecordingPlanner()
     index = RecordingIndex(ranked, corpus_page)
     expected = _analysis()
     analyzer = RecordingAnalyzer(expected)
 
-    analysis, card = analyze_and_review_inquiry(
+    analysis, collected = analyze_inquiry_with_evidence(
         "customer inquiry",
         index=index,
         planner=planner,
@@ -206,7 +146,7 @@ def test_analyze_and_review_returns_both_outputs_from_one_pipeline_run() -> None
     )
 
     assert analysis == expected
-    assert card.inquiry == "customer inquiry"
-    assert planner.inquiries == ["customer inquiry"]
-    assert index.query_calls == [("epoxy coating", 3, ("TDS",))]
-    assert analyzer.calls == [("customer inquiry", [corpus_page])]
+    assert analyzer.calls[0][1] == [ranked, corpus_page]
+    assert collected.evidence == tuple(analyzer.calls[0][1])
+    assert len(index.query_calls) == 1
+    assert len(index.page_calls) == 1

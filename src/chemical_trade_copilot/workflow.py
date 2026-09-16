@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Protocol
 
 from .inquiry_analysis import (
@@ -9,7 +10,6 @@ from .inquiry_analysis import (
 from .materials import DocumentType
 from .pdf_pages import PageRecord
 from .retrieval import SearchResult
-from .inquiry_review import TechnicalReviewCard, build_review_card
 
 
 class RetrievalPlanner(Protocol):
@@ -36,32 +36,28 @@ class InquiryAnalyzer(Protocol):
     ) -> InquiryAnalysis: ...
 
 
-def analyze_inquiry(
+@dataclass(frozen=True, slots=True)
+class InquiryEvidence:
+    """一次检索的全部产物，供分析模型与本地复核卡共用，避免重复检索。"""
+
+    plan: RetrievalPlan
+    ranked: tuple[SearchResult, ...]
+    evidence: tuple[EvidencePage, ...]
+
+
+def gather_evidence(
     inquiry: str,
     *,
     index: EvidenceIndex,
     planner: RetrievalPlanner,
-    analyzer: InquiryAnalyzer,
     limit: int = 3,
-) -> InquiryAnalysis:
-    analysis, _ = analyze_and_review_inquiry(
-        inquiry,
-        index=index,
-        planner=planner,
-        analyzer=analyzer,
-        limit=limit,
-    )
-    return analysis
+) -> InquiryEvidence:
+    """检索规划 → 页级命中 → 合并为该文档类型下的完整证据集合。
 
-
-def analyze_and_review_inquiry(
-    inquiry: str,
-    *,
-    index: EvidenceIndex,
-    planner: RetrievalPlanner,
-    analyzer: InquiryAnalyzer,
-    limit: int = 3,
-) -> tuple[InquiryAnalysis, TechnicalReviewCard]:
+    步骤与顺序和引入审阅工作流之前逐字一致。送入分析模型的证据集合保持为
+    「命中页 + 该文档类型下的全部物理页」，**不做裁剪**，因此单次分析的
+    解析能力不因界面简化而改变。
+    """
     plan = planner.plan(inquiry)
     ranked = index.query(
         plan.search_query,
@@ -71,28 +67,41 @@ def analyze_and_review_inquiry(
     evidence = merge_ranked_with_corpus(
         ranked, index.pages(doc_types=plan.document_types)
     )
-    analysis = analyzer.analyze(inquiry, evidence)
-    return analysis, build_review_card(
-        inquiry,
-        analysis,
-        ranked,
-        available_evidence=evidence,
+    return InquiryEvidence(
+        plan=plan,
+        ranked=tuple(ranked),
+        evidence=tuple(evidence),
     )
 
 
-def review_inquiry(
+def analyze_inquiry_with_evidence(
     inquiry: str,
     *,
     index: EvidenceIndex,
     planner: RetrievalPlanner,
     analyzer: InquiryAnalyzer,
     limit: int = 3,
-) -> TechnicalReviewCard:
-    _, card = analyze_and_review_inquiry(
+) -> tuple[InquiryAnalysis, InquiryEvidence]:
+    collected = gather_evidence(
+        inquiry, index=index, planner=planner, limit=limit
+    )
+    analysis = analyzer.analyze(inquiry, list(collected.evidence))
+    return analysis, collected
+
+
+def analyze_inquiry(
+    inquiry: str,
+    *,
+    index: EvidenceIndex,
+    planner: RetrievalPlanner,
+    analyzer: InquiryAnalyzer,
+    limit: int = 3,
+) -> InquiryAnalysis:
+    analysis, _ = analyze_inquiry_with_evidence(
         inquiry,
         index=index,
         planner=planner,
         analyzer=analyzer,
         limit=limit,
     )
-    return card
+    return analysis
