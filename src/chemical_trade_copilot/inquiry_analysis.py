@@ -162,6 +162,18 @@ class PlannedRetriever:
         )
 
 
+# DeepSeek 的思考模式默认开启，且思考内容与最终回答共用 max_tokens。实测 9036 token
+# 的证据 prompt 会让模型烧完全部 max_tokens 预算，返回 finish_reason=length 且
+# content 为空；应用随即重试整轮，最终降级为证据不足，单次最长约 6 分钟且产出为零。
+# 结构化 JSON 抽取不需要长思维链：关闭思考后同一条询盘由 96 秒降至约 8 秒，
+# 且不再出现空返回。这不改变送入模型的证据、门禁规则或输出结构。
+DISABLED_THINKING: dict[str, dict[str, str]] = {"thinking": {"type": "disabled"}}
+
+# 实测正常调用约 8-15 秒。延迟远超该范围即属异常，必须快速失败而不是让界面一直等待；
+# OpenAI SDK 默认单请求超时为 600 秒且自带 2 次重试，叠加本模块自身的重试会放大到数十分钟。
+DEFAULT_REQUEST_TIMEOUT_SECONDS = 45.0
+
+
 class DeepSeekJsonClient:
     """Thin adapter around the official OpenAI client used by DeepSeek's API."""
 
@@ -171,12 +183,18 @@ class DeepSeekJsonClient:
         *,
         base_url: str = "https://api.deepseek.com",
         model: str = "deepseek-v4-pro",
+        request_timeout: float = DEFAULT_REQUEST_TIMEOUT_SECONDS,
         client: Any | None = None,
     ) -> None:
         if client is None:
             from openai import OpenAI
 
-            client = OpenAI(api_key=api_key, base_url=base_url)
+            client = OpenAI(
+                api_key=api_key,
+                base_url=base_url,
+                timeout=request_timeout,
+                max_retries=0,
+            )
         self._client = client
         self._model = model
 
@@ -194,6 +212,7 @@ class DeepSeekJsonClient:
                 response_format={"type": "json_object"},
                 temperature=0,
                 max_tokens=6000,
+                extra_body=DISABLED_THINKING,
             )
             content = response.choices[0].message.content
             if content:
