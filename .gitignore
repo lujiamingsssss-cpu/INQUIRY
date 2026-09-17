@@ -23,6 +23,7 @@ deploy/
 # 运行与临时产物
 output/
 tmp/
+.cache/
 .playwright-cli/
 artifacts/
 dist/

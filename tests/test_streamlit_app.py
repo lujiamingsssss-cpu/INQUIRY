@@ -245,7 +245,7 @@ def test_entry_states_the_one_shot_scope_and_missing_key(monkeypatch) -> None:
     app = AppTest.from_file(str(APP)).run(timeout=60)
 
     captions = " ".join(item.value for item in app.caption)
-    assert "Nothing is stored" in captions
+    assert "No inquiry history is kept" in captions
     assert "Evidence scope" in captions
     assert "demo" not in captions.lower()
     assert app.info
@@ -316,7 +316,11 @@ def test_insufficient_result_never_offers_a_product_or_temperature(
 
     assert not fake.values("header")
     joined = fake.joined()
-    assert "Current evidence is insufficient" in joined
+    # 未通过校验属"可重试"，必须与"资料不足"在措辞上区分开
+    assert "Model output did not pass local validation" in joined
+    assert "No verified conclusion in this attempt" in joined
+    assert "approved documents themselves are unchanged" in joined
+    assert "Current evidence is insufficient" not in joined
     # 不得出现任何"已核验参数"卡片；引用客户原话（其中可能含 200°C）是允许的，
     # 因为那是询盘事实，不是系统给出的未核验数值。
     assert "Verified fact" not in joined
@@ -384,8 +388,8 @@ def test_result_round_trips_through_session_memory_only(monkeypatch) -> None:
     assert streamlit_app._load_result() is None
 
 
-def test_app_module_contains_no_file_writing_calls() -> None:
-    """一次性工具不得持久化：模块源码里不允许出现写文件调用。"""
+def test_app_module_writes_no_files_itself() -> None:
+    """界面模块自身不落盘；唯一的本机落盘由 answer_cache 承担（见 test_answer_cache）。"""
     source = APP.read_text(encoding="utf-8")
     forbidden = (
         "write_text(",

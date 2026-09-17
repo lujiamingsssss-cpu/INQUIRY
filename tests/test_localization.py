@@ -42,6 +42,9 @@ ONE_SHOT_KEYS = {
     "result.next_action",
     "insufficient.eyebrow",
     "insufficient.guardrail",
+    "guardrail.eyebrow",
+    "guardrail.headline",
+    "guardrail.body",
     "decision_line.technical",
     "decision_line.compliance",
     "decision_line.quotation",
@@ -163,8 +166,10 @@ def test_visible_copy_no_longer_announces_a_public_demo() -> None:
 def test_scope_and_one_shot_footers_are_localized() -> None:
     assert text("footer.scope", "en", products="EPON").startswith("Evidence scope")
     assert text("footer.scope", "zh-CN", products="EPON").startswith("证据范围")
-    assert "nothing is stored" in text("footer.oneshot", "en").lower()
-    assert "不落盘" in text("footer.oneshot", "zh-CN")
+    assert "no inquiry history is kept" in text("footer.oneshot", "en").lower()
+    assert "cached on this machine" in text("footer.oneshot", "en").lower()
+    assert "不保留询盘记录" in text("footer.oneshot", "zh-CN")
+    assert "缓存" in text("footer.oneshot", "zh-CN")
 
 
 def test_result_and_export_copy_is_localized_in_both_locales() -> None:

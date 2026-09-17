@@ -58,7 +58,18 @@ def gather_evidence(
     「命中页 + 该文档类型下的全部物理页」，**不做裁剪**，因此单次分析的
     解析能力不因界面简化而改变。
     """
-    plan = planner.plan(inquiry)
+    return gather_evidence_for_plan(
+        planner.plan(inquiry), index=index, limit=limit
+    )
+
+
+def gather_evidence_for_plan(
+    plan: RetrievalPlan,
+    *,
+    index: EvidenceIndex,
+    limit: int = 3,
+) -> InquiryEvidence:
+    """按**已知**检索计划取证据：用于缓存命中时在本地复核证据是否仍然一致（零模型调用）。"""
     ranked = index.query(
         plan.search_query,
         limit=limit,

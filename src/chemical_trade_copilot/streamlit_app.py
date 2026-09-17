@@ -16,12 +16,14 @@ import hashlib
 import html
 import json
 import os
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
 import streamlit as st
 from streamlit.errors import StreamlitAPIException
 
+from chemical_trade_copilot import answer_cache
 from chemical_trade_copilot.evidence_viewer import (
     build_zoomable_page_html,
     render_approved_citation_page,
@@ -35,6 +37,7 @@ from chemical_trade_copilot.inquiry_analysis import (
     DeepSeekJsonClient,
     InquiryAnalysis,
     InquiryRetrievalPlanner,
+    RetrievalPlan,
     SourceCitation,
 )
 from chemical_trade_copilot.inquiry_review import (
@@ -65,7 +68,10 @@ from chemical_trade_copilot.ui_presenter import (
     build_email_draft,
 )
 from chemical_trade_copilot.local_settings import load_local_settings
-from chemical_trade_copilot.workflow import analyze_inquiry_with_evidence
+from chemical_trade_copilot.workflow import (
+    analyze_inquiry_with_evidence,
+    gather_evidence_for_plan,
+)
 
 
 # 本机配置（模型密钥、资料根目录）由应用自己从 .env.local 读取，
@@ -199,30 +205,94 @@ class _MetadataOnlyEmbedder:
 
 def _run_analysis(
     inquiry: str,
-) -> tuple[InquiryAnalysis, TechnicalReviewCard, str]:
-    api_key = os.environ.get("DEEPSEEK_API_KEY")
-    if not api_key:
-        raise ValueError("DEEPSEEK_API_KEY is not available in this process")
-    client = DeepSeekJsonClient(
-        api_key,
-        base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro"),
-    )
+) -> tuple[InquiryAnalysis, TechnicalReviewCard, str, bool]:
+    """返回 (结论, 复核卡, 资料指纹, 是否沿用本机已核验结论)。
+
+    **只缓存通过门禁的结论**：同一条询盘在资料与模型不变时给出同一结论，消除
+    "这次答不出、下次又答出"的噪音。命中时不做任何模型调用，但会在本地按缓存里的
+    检索计划复核证据是否仍然一致；不一致即当作未命中。
+    """
     expected_fingerprint = material_catalog_fingerprint(
         load_material_catalog(_material_catalog_path())
     )
+    model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro")
     with PageIndex(_database_path()) as index:
         index.assert_catalog_fingerprint(expected_fingerprint)
-        analysis, collected = _analyze_with_evidence(
-            inquiry, index=index, client=client
+        cached = _cached_analysis(
+            inquiry, index=index, fingerprint=expected_fingerprint, model=model
         )
+        if cached is not None:
+            analysis, collected = cached
+            from_cache = True
+        else:
+            api_key = os.environ.get("DEEPSEEK_API_KEY")
+            if not api_key:
+                raise ValueError("DEEPSEEK_API_KEY is not available in this process")
+            client = DeepSeekJsonClient(
+                api_key,
+                base_url=os.environ.get(
+                    "DEEPSEEK_BASE_URL", "https://api.deepseek.com"
+                ),
+                model=model,
+            )
+            analysis, collected = _analyze_with_evidence(
+                inquiry, index=index, client=client
+            )
+            from_cache = False
     card = build_review_card(
         inquiry,
         analysis,
         list(collected.ranked),
         available_evidence=list(collected.evidence),
     )
-    return analysis, card, expected_fingerprint
+    if not from_cache and not build_analysis_view(analysis).fail_closed:
+        answer_cache.store(
+            answer_cache.CacheEntry(
+                key=answer_cache.cache_key(
+                    inquiry,
+                    catalog_fingerprint=expected_fingerprint,
+                    model=model,
+                ),
+                inquiry=inquiry,
+                model=model,
+                search_query=collected.plan.search_query,
+                document_types=tuple(collected.plan.document_types),
+                evidence=answer_cache.evidence_identity(collected.ranked),
+                analysis_json=analysis.model_dump_json(),
+                created_at=answer_cache.now_iso(),
+            )
+        )
+    return analysis, card, expected_fingerprint, from_cache
+
+
+def _cached_analysis(
+    inquiry: str,
+    *,
+    index: PageIndex,
+    fingerprint: str,
+    model: str,
+):
+    """命中且证据仍然一致时返回缓存结论，否则返回 ``None``。"""
+    entry = answer_cache.lookup(
+        inquiry, catalog_fingerprint=fingerprint, model=model
+    )
+    if entry is None:
+        return None
+    try:
+        collected = gather_evidence_for_plan(
+            RetrievalPlan(
+                search_query=entry.search_query,
+                document_types=entry.document_types,
+            ),
+            index=index,
+            limit=3,
+        )
+        analysis = InquiryAnalysis.model_validate_json(entry.analysis_json)
+    except (ValueError, OSError):
+        return None
+    if answer_cache.evidence_identity(collected.ranked) != entry.evidence:
+        return None
+    return analysis, collected
 
 
 def _analyze_with_evidence(inquiry: str, *, index: PageIndex, client):
@@ -240,14 +310,17 @@ def _store_result(
     analysis: InquiryAnalysis,
     card: TechnicalReviewCard,
     fingerprint: str,
+    *,
+    from_cache: bool = False,
 ) -> None:
-    """结果只写进会话内存；本工具不做任何持久化。"""
+    """页面结果只写进会话内存；跨运行的一致性由已核验结论缓存负责。"""
     st.session_state[_RESULT_KEY] = json.dumps(
         {
             "inquiry": inquiry,
             "analysis": json.loads(analysis.model_dump_json()),
             "card": json.loads(card.model_dump_json()),
             "fingerprint": fingerprint,
+            "from_cache": bool(from_cache),
         },
         ensure_ascii=False,
     )
@@ -263,6 +336,7 @@ def _load_result():
         analysis=InquiryAnalysis.model_validate(data["analysis"]),
         card=TechnicalReviewCard.model_validate(data["card"]),
         fingerprint=data["fingerprint"],
+        from_cache=bool(data.get("from_cache", False)),
     )
 
 
@@ -574,18 +648,28 @@ def _render_result(result, locale: Locale) -> None:
     view = build_analysis_view(analysis)
     if analysis.recommendation_status == "supported":
         st.html(f'<div class="ctc-eyebrow">{html.escape(text("result.validated", locale))}</div>')
+    elif view.fail_closed:
+        # 与"资料不足"区分：本次是模型输出未通过校验，属可重试，不代表资料缺失。
+        st.html(f'<div class="ctc-eyebrow">{html.escape(text("guardrail.eyebrow", locale))}</div>')
     else:
         st.html(
             f'<div class="ctc-eyebrow">{html.escape(text("insufficient.eyebrow", locale))}</div>'
         )
     if analysis.recommended_product:
         st.header(analysis.recommended_product)
-    st.subheader(view_text(view.headline, locale))
-    st.write(
-        text("result.supported_description", locale)
-        if analysis.recommendation_status == "supported"
-        else view_text(analysis.summary_zh, locale)
+    st.subheader(
+        text("guardrail.headline", locale)
+        if view.fail_closed
+        else view_text(view.headline, locale)
     )
+    if getattr(result, "from_cache", False):
+        st.caption(text("result.from_cache", locale))
+    if analysis.recommendation_status == "supported":
+        st.write(text("result.supported_description", locale))
+    elif view.fail_closed:
+        st.write(text("guardrail.body", locale))
+    else:
+        st.write(view_text(analysis.summary_zh, locale))
     if view.fail_closed:
         st.html(
             f'<div class="ctc-guardrail">{html.escape(text("insufficient.guardrail", locale))}</div>'
@@ -642,11 +726,19 @@ def _render_entry_content(locale: Locale) -> None:
             return
         try:
             with st.spinner(text("entry.spinner", locale)):
-                analysis, card, fingerprint = _run_analysis(inquiry)
-        except Exception:
+                analysis, card, fingerprint, from_cache = _run_analysis(inquiry)
+        except Exception as error:
+            # 失败仍要关闭（不给未核验结论），但必须留下可诊断的痕迹，
+            # 否则真实原因会被这句安全提示吞掉，只剩"分析无法完成"。
+            print(
+                f"[chemical-trade-copilot] analysis failed: "
+                f"{type(error).__name__}: {error}",
+                file=sys.stderr,
+                flush=True,
+            )
             st.error(text("entry.failed", locale))
             return
-        _store_result(inquiry, analysis, card, fingerprint)
+        _store_result(inquiry, analysis, card, fingerprint, from_cache=from_cache)
         st.rerun()
 
 
